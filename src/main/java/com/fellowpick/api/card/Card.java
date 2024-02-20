@@ -1,8 +1,11 @@
 package com.fellowpick.api.card;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
+import com.fellowpick.api.deck.Deck;
+import com.fellowpick.api.pick.Pick;
+import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
+
+import java.util.Set;
 
 @Entity
 public class Card {
@@ -16,14 +19,23 @@ public class Card {
     @NotNull
     private String name;
 
+    @ManyToOne
+    @JoinColumn(name = "deck_id", referencedColumnName = "id")
+    private Deck deck;
+
+    @OneToMany(mappedBy = "pick", cascade = CascadeType.ALL)
+    private Set<Pick> picks;
+
     /**
      * Constructors.
      */
     public Card() {}
 
-    public Card(String id, String name) {
+    public Card(String id, String name, Deck deck, Set<Pick> picks) {
         this.id = id;
         this.name = name;
+        this.deck = deck;
+        this.picks = picks;
     }
 
     /**
@@ -44,4 +56,12 @@ public class Card {
     public void setName(String name) {
         this.name = name;
     }
+
+    public Deck getDeck() { return deck; }
+
+    public void setDeck(Deck deck) { this.deck = deck; }
+
+    public Set<Pick> getPicks() { return picks; }
+
+    public void setPicks(Set<Pick> picks) { this.picks = picks; }
 }

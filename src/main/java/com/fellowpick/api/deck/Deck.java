@@ -15,7 +15,7 @@ public class Deck {
     @NotNull
     private String name;
 
-    @OneToMany
+    @OneToMany(mappedBy = "deck", cascade = CascadeType.ALL)
     private Set<Card> cards;
 
     /**
