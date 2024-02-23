@@ -6,7 +6,11 @@ import jakarta.validation.constraints.NotNull;
 
 import java.util.Set;
 
+/**
+ * Represents domain model.
+ */
 @Entity
+@Table(name = "deck")
 public class Deck {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

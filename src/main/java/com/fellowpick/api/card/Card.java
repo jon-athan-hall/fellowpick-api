@@ -23,7 +23,7 @@ public class Card {
     @JoinColumn(name = "deck_id", referencedColumnName = "id")
     private Deck deck;
 
-    @OneToMany(mappedBy = "pick", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "card", cascade = CascadeType.ALL)
     private Set<Pick> picks;
 
     /**
