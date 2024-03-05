@@ -19,6 +19,9 @@ public class Card {
     @NotNull
     private String name;
 
+    @ElementCollection
+    private Set<Color> colorIdentity;
+
     @ManyToOne
     @JoinColumn(name = "deck_id", referencedColumnName = "id")
     private Deck deck;
@@ -31,9 +34,10 @@ public class Card {
      */
     public Card() {}
 
-    public Card(String id, String name, Deck deck, Set<Pick> picks) {
+    public Card(String id, String name, Set<Color> colorIdentity, Deck deck, Set<Pick> picks) {
         this.id = id;
         this.name = name;
+        this.colorIdentity = colorIdentity;
         this.deck = deck;
         this.picks = picks;
     }
@@ -56,6 +60,10 @@ public class Card {
     public void setName(String name) {
         this.name = name;
     }
+
+    public Set<Color> getColorIdentity() { return colorIdentity; };
+
+    public void setColorIdentity(Set<Color> colorIdentity) { this.colorIdentity = colorIdentity; }
 
     public Deck getDeck() { return deck; }
 
