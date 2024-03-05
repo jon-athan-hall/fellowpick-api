@@ -1,5 +1,6 @@
 package com.fellowpick.api.card;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fellowpick.api.deck.Deck;
 import com.fellowpick.api.pick.Pick;
 import jakarta.persistence.*;
@@ -20,10 +21,12 @@ public class Card {
     private String name;
 
     @ElementCollection
+    @Enumerated(EnumType.STRING)
     private Set<Color> colorIdentity;
 
     @ManyToOne
     @JoinColumn(name = "deck_id", referencedColumnName = "id")
+    @JsonIgnore
     private Deck deck;
 
     @OneToMany(mappedBy = "card", cascade = CascadeType.ALL)
@@ -72,4 +75,11 @@ public class Card {
     public Set<Pick> getPicks() { return picks; }
 
     public void setPicks(Set<Pick> picks) { this.picks = picks; }
+
+    /**
+     * Takes a set code and number and creates a proper id value with proper lead padding.
+     */
+    public static String createIdFromSetCodeAndNumber(String setCode, String number) {
+        return setCode + String.format("%04d", Integer.parseInt(number));
+    }
 }
