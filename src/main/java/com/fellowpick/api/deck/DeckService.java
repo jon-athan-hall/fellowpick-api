@@ -3,6 +3,7 @@ package com.fellowpick.api.deck;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Encapsulates business logic.
@@ -18,6 +19,10 @@ public class DeckService {
     public List<Deck> getAllDecks() {
         // Add business logic or validation here before returning.
         return deckRepository.findAll();
+    }
+
+    public Optional<Deck> getDeck(Long id) {
+        return deckRepository.findById(id);
     }
 
     public Deck createDeck(Deck deck) {
