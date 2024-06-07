@@ -19,7 +19,6 @@ import java.util.*;
  */
 @Component
 public class CardLoader implements ApplicationRunner {
-
     private final CardRepository cardRepository;
 
     private final DeckRepository deckRepository;
