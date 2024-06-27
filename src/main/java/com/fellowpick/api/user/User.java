@@ -15,7 +15,6 @@ import java.util.Set;
 public class User implements UserDetails {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @NotNull
     private Long id;
 
     @Column(unique = true)
@@ -51,7 +50,7 @@ public class User implements UserDetails {
      */
     @Override
     public String getUsername() {
-        return getEmail();
+        return email;
     }
 
     @Override
