@@ -48,13 +48,13 @@ public class SecurityConfiguration {
         return new BCryptPasswordEncoder();
     }
 
-    @Bean
-    public UserDetailsService userDetailsService() {
-        UserDetails userDetails = User
-                .withUsername("username")
-                .password("password")
-                .build();
-
-        return new InMemoryUserDetailsManager(userDetails);
-    }
+//    @Bean
+//    public UserDetailsService userDetailsService() {
+//        UserDetails userDetails = User
+//                .withUsername("username")
+//                .password("password")
+//                .build();
+//
+//        return new InMemoryUserDetailsManager(userDetails);
+//    }
 }

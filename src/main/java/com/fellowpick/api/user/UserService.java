@@ -15,9 +15,6 @@ public class UserService {
     }
 
     public List<User> getAllUsers() {
-        Iterable<User> users = userRepository.findAll();
-
-        return StreamSupport.stream(users.spliterator(), false)
-                .collect(Collectors.toList());
+        return userRepository.findAll();
     }
 }

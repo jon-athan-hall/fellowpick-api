@@ -37,7 +37,6 @@ public class ApplicationConfiguration {
                 .csrf(csrf -> csrf.disable()) // @TODO Enable this one day.
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers("/auth/**").permitAll()
-                        .requestMatchers("/users/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session
