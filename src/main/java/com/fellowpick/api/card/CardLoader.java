@@ -3,12 +3,14 @@ package com.fellowpick.api.card;
 import com.fasterxml.jackson.core.exc.StreamReadException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DatabindException;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fellowpick.api.deck.Deck;
 import com.fellowpick.api.deck.DeckRepository;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.RestTemplate;
 
 import java.io.File;
 import java.io.IOException;
@@ -22,6 +24,12 @@ public class CardLoader implements ApplicationRunner {
     private final CardRepository cardRepository;
 
     private final DeckRepository deckRepository;
+
+    private final RestTemplate restTemplate = new RestTemplate();
+
+    private final ObjectMapper objectMapper = new ObjectMapper();
+
+    private final static String SCRYFALL_API_CARDS_URL = "https://api.scryfall.com/cards/%s";
 
     public CardLoader(CardRepository cardRepository, DeckRepository deckRepository) {
         this.cardRepository = cardRepository;
@@ -65,6 +73,14 @@ public class CardLoader implements ApplicationRunner {
                 for (String color : colorIdentityList) {
                     colorIdentitySet.add(Color.valueOf(color));
                 }
+
+                // Get the card image from Scryfall.
+                Map<String, Object> identifiers = (Map<String, Object>) cardData.get("identifiers");
+                String scryfallApiUrl = String.format(SCRYFALL_API_CARDS_URL, identifiers.get("scryfallId"));
+                String jsonResponse = restTemplate.getForObject(scryfallApiUrl, String.class);
+                JsonNode scryfallCardJson = objectMapper.readTree(jsonResponse);
+                String imageUrl = scryfallCardJson.path("image_uris").path("png").asText();
+                card.setImageUrl(imageUrl);
 
                 // Set the rest of the card attributes and save.
                 card.setId(Card.createIdFromSetCodeAndNumber(

@@ -24,6 +24,9 @@ public class Card {
     @Enumerated(EnumType.STRING)
     private Set<Color> colorIdentity;
 
+    @NotNull
+    private String imageUrl;
+
     @ManyToOne
     @JoinColumn(name = "deck_id", referencedColumnName = "id")
     @JsonIgnore
@@ -64,9 +67,13 @@ public class Card {
         this.name = name;
     }
 
-    public Set<Color> getColorIdentity() { return colorIdentity; };
+    public Set<Color> getColorIdentity() { return colorIdentity; }
 
     public void setColorIdentity(Set<Color> colorIdentity) { this.colorIdentity = colorIdentity; }
+
+    public String getImageUrl() { return imageUrl; }
+
+    public void setImageUrl(String imageUrl) { this.imageUrl = imageUrl; }
 
     public Deck getDeck() { return deck; }
 

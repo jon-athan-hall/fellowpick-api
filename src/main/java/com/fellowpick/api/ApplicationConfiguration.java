@@ -3,6 +3,7 @@ package com.fellowpick.api;
 import com.fellowpick.api.security.SecurityFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -37,6 +38,7 @@ public class ApplicationConfiguration {
                 .csrf(csrf -> csrf.disable()) // @TODO Enable this one day.
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers("/auth/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/decks/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session
