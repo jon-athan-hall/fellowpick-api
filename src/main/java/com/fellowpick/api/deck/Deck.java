@@ -20,6 +20,7 @@ public class Deck {
     private String name;
 
     @OneToMany(mappedBy = "deck", cascade = CascadeType.ALL)
+    @OrderBy("id ASC")
     private Set<Card> cards;
 
     /**
