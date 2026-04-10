@@ -1,0 +1,28 @@
+package dev.trailhead.role;
+
+import dev.trailhead.common.BaseEntity;
+import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import org.hibernate.annotations.UuidGenerator;
+
+@Entity
+@Table(name = "roles")
+@Getter
+@Setter
+@NoArgsConstructor
+public class Role extends BaseEntity {
+
+    @Id
+    @UuidGenerator
+    @Column(length = 36, updatable = false, nullable = false)
+    private String id;
+
+    @Column(nullable = false, unique = true, length = 50)
+    private String name;
+
+    public Role(String name) {
+        this.name = name;
+    }
+}
