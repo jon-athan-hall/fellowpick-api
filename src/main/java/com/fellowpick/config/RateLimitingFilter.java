@@ -5,6 +5,7 @@ import com.fellowpick.exception.ErrorResponse;
 import io.github.bucket4j.Bandwidth;
 import io.github.bucket4j.Bucket;
 import io.github.bucket4j.ConsumptionProbe;
+import jakarta.annotation.Nonnull;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -25,7 +26,6 @@ import java.util.function.Supplier;
 /**
  * IP-based rate limiting for sensitive auth endpoints. Uses Bucket4j's token-bucket algorithm
  * with one bucket per (endpoint, IP) pair, kept in memory.
- *
  * Note: in-memory storage means each app instance tracks its own counters. For multi-server
  * deployments, swap to a Redis-backed Bucket4j store.
  */
@@ -56,9 +56,9 @@ public class RateLimitingFilter extends OncePerRequestFilter {
     }
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request,
-                                    HttpServletResponse response,
-                                    FilterChain filterChain) throws ServletException, IOException {
+    protected void doFilterInternal(@Nonnull HttpServletRequest request,
+                                    @Nonnull HttpServletResponse response,
+                                    @Nonnull FilterChain filterChain) throws ServletException, IOException {
         String key = request.getMethod() + ":" + request.getRequestURI();
         Supplier<Bucket> limit = limitsByPath.get(key);
 

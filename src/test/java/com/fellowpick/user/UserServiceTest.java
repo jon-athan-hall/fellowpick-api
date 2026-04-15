@@ -155,7 +155,7 @@ class UserServiceTest {
         Page<UserResponse> result = userService.getAllUsers(pageable);
 
         assertEquals(1, result.getTotalElements());
-        assertEquals(testUserResponse, result.getContent().get(0));
+        assertEquals(testUserResponse, result.getContent().getFirst());
     }
 
     @Test

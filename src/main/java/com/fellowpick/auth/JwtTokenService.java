@@ -8,7 +8,6 @@ import org.springframework.security.oauth2.jwt.JwtEncoderParameters;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
-import java.util.stream.Collectors;
 
 /**
  * This service takes a User entity and produces a signed JWT string.
@@ -31,15 +30,15 @@ public class JwtTokenService {
 
         // Create a List of role names.
         var roles = user.getRoles().stream()
-                .map(role -> role.getName())
-                .collect(Collectors.toList());
+                .map(com.fellowpick.role.Role::getName)
+                .toList();
 
         // JWT is basically a JSON payload that gets signed. Store some custom claims to use in the frontend.
         JwtClaimsSet claims = JwtClaimsSet.builder()
                 .issuer(jwtProperties.issuer())
                 .issuedAt(now)
                 .expiresAt(expiry)
-                .subject(user.getId().toString())
+                .subject(user.getId())
                 .claim("email", user.getEmail())
                 .claim("name", user.getName())
                 .claim("roles", roles)

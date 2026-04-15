@@ -23,6 +23,7 @@ import org.springframework.test.web.servlet.MvcResult;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.function.BooleanSupplier;
 
 import static org.hamcrest.Matchers.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -90,7 +91,7 @@ class AuthControllerIntegrationTest {
 
     @Test
     void login_shouldReturnTokens() throws Exception {
-        register("login@example.com", "password123");
+        register("login@example.com");
 
         var loginRequest = new LoginRequest("login@example.com", "password123");
 
@@ -105,7 +106,7 @@ class AuthControllerIntegrationTest {
 
     @Test
     void login_badCredentials_shouldReturn401() throws Exception {
-        register("bad@example.com", "password123");
+        register("bad@example.com");
 
         var loginRequest = new LoginRequest("bad@example.com", "wrongpassword");
 
@@ -186,7 +187,7 @@ class AuthControllerIntegrationTest {
 
     @Test
     void verify_validToken_shouldMarkVerified() throws Exception {
-        register("verify@example.com", "password123");
+        register("verify@example.com");
         EmailVerificationToken token = latestVerificationToken();
 
         mockMvc.perform(post("/api/auth/verify")
@@ -195,7 +196,7 @@ class AuthControllerIntegrationTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.message").value("Email verified successfully"));
 
-        assertTrueLater("user should be verified",
+        assertTrueLater(
                 () -> userRepository.findByEmail("verify@example.com").orElseThrow().isVerified());
     }
 
@@ -209,7 +210,7 @@ class AuthControllerIntegrationTest {
 
     @Test
     void verify_expiredToken_shouldReturn401() throws Exception {
-        register("expired@example.com", "password123");
+        register("expired@example.com");
         EmailVerificationToken token = latestVerificationToken();
         token.setExpiresAt(Instant.now().minusSeconds(60));
         emailVerificationTokenRepository.save(token);
@@ -222,7 +223,7 @@ class AuthControllerIntegrationTest {
 
     @Test
     void verify_alreadyConfirmed_shouldReturn401() throws Exception {
-        register("alreadyverified@example.com", "password123");
+        register("alreadyverified@example.com");
         EmailVerificationToken token = latestVerificationToken();
 
         // First verify - succeeds.
@@ -250,7 +251,7 @@ class AuthControllerIntegrationTest {
 
     @Test
     void forgotPassword_validEmail_shouldReturnOk() throws Exception {
-        register("forgot@example.com", "password123");
+        register("forgot@example.com");
 
         mockMvc.perform(post("/api/auth/forgot-password")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -282,7 +283,7 @@ class AuthControllerIntegrationTest {
 
     @Test
     void resetPassword_validToken_shouldChangePassword() throws Exception {
-        register("reset@example.com", "password123");
+        register("reset@example.com");
         requestPasswordReset("reset@example.com");
         PasswordResetToken token = latestResetToken();
 
@@ -312,7 +313,7 @@ class AuthControllerIntegrationTest {
 
     @Test
     void resetPassword_reusedToken_shouldReturn401() throws Exception {
-        register("reused@example.com", "password123");
+        register("reused@example.com");
         requestPasswordReset("reused@example.com");
         PasswordResetToken token = latestResetToken();
 
@@ -371,12 +372,12 @@ class AuthControllerIntegrationTest {
 
     private EmailVerificationToken latestVerificationToken() {
         List<EmailVerificationToken> all = emailVerificationTokenRepository.findAll();
-        return all.get(all.size() - 1);
+        return all.getLast();
     }
 
     private PasswordResetToken latestResetToken() {
         List<PasswordResetToken> all = passwordResetTokenRepository.findAll();
-        return all.get(all.size() - 1);
+        return all.getLast();
     }
 
     private void requestPasswordReset(String email) throws Exception {
@@ -385,15 +386,15 @@ class AuthControllerIntegrationTest {
                 .content(objectMapper.writeValueAsString(new ForgotPasswordRequest(email))));
     }
 
-    private void assertTrueLater(String message, java.util.function.BooleanSupplier condition) {
+    private void assertTrueLater(BooleanSupplier condition) {
         if (!condition.getAsBoolean()) {
-            throw new AssertionError(message);
+            throw new AssertionError("user should be verified");
         }
     }
 
 
-    private void register(String email, String password) throws Exception {
-        var request = new RegisterRequest("Test User", email, password);
+    private void register(String email) throws Exception {
+        var request = new RegisterRequest("Test User", email, "password123");
         mockMvc.perform(post("/api/auth/register")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)));

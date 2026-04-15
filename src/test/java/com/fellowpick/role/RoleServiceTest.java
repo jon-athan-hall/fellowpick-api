@@ -57,7 +57,7 @@ class RoleServiceTest {
         List<RoleResponse> result = roleService.getAllRoles();
 
         assertEquals(1, result.size());
-        assertEquals(testRoleResponse, result.get(0));
+        assertEquals(testRoleResponse, result.getFirst());
     }
 
     @Test

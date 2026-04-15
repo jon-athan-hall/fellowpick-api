@@ -52,7 +52,7 @@ public class UserController {
                                                           Authentication authentication) {
         // Self-service password changes must verify the current password.
         // Admins changing another user's password do not.
-        boolean isSelf = id.toString().equals(authentication.getName());
+        boolean isSelf = id.equals(authentication.getName());
         userService.changePassword(id, request, isSelf);
         return ResponseEntity.ok(new MessageResponse("Password updated successfully"));
     }
