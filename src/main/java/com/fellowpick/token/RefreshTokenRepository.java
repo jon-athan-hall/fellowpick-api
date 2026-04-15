@@ -7,8 +7,10 @@ import org.springframework.data.repository.query.Param;
 
 import java.util.Optional;
 
+// Data access layer for refresh tokens with bulk revoke and cleanup queries.
 public interface RefreshTokenRepository extends JpaRepository<RefreshToken, Long> {
 
+    // Looks up a refresh token by its string value.
     Optional<RefreshToken> findByToken(String token);
 
     // Custom JPQL query to set revoked to true for all tokens belong to a user that haven't already been revoked.

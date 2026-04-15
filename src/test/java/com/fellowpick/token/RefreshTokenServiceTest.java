@@ -16,6 +16,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
+// Unit tests for RefreshTokenService covering create, verify, rotate, and revoke operations.
 @ExtendWith(MockitoExtension.class)
 class RefreshTokenServiceTest {
 
@@ -39,6 +40,7 @@ class RefreshTokenServiceTest {
         testUser.setEmail("test@example.com");
     }
 
+    // Verifies that creating a refresh token saves it and returns a valid, non-revoked token.
     @Test
     void createRefreshToken_shouldSaveAndReturn() {
         when(refreshTokenRepository.save(any(RefreshToken.class)))
@@ -54,6 +56,7 @@ class RefreshTokenServiceTest {
         verify(refreshTokenRepository).save(any(RefreshToken.class));
     }
 
+    // Verifies that a valid, non-revoked, non-expired token passes verification.
     @Test
     void verify_withValidToken_shouldReturn() {
         RefreshToken token = validToken();
@@ -64,6 +67,7 @@ class RefreshTokenServiceTest {
         assertEquals(token, result);
     }
 
+    // Verifies that a revoked token throws TokenRefreshException.
     @Test
     void verify_withRevokedToken_shouldThrow() {
         RefreshToken token = validToken();
@@ -74,6 +78,7 @@ class RefreshTokenServiceTest {
                 () -> refreshTokenService.verify("revoked-token"));
     }
 
+    // Verifies that an expired token throws TokenRefreshException.
     @Test
     void verify_withExpiredToken_shouldThrow() {
         RefreshToken token = validToken();
@@ -84,6 +89,7 @@ class RefreshTokenServiceTest {
                 () -> refreshTokenService.verify("expired-token"));
     }
 
+    // Verifies that a nonexistent token string throws TokenRefreshException.
     @Test
     void verify_withInvalidToken_shouldThrow() {
         when(refreshTokenRepository.findByToken("nonexistent")).thenReturn(Optional.empty());
@@ -92,6 +98,7 @@ class RefreshTokenServiceTest {
                 () -> refreshTokenService.verify("nonexistent"));
     }
 
+    // Verifies that rotation revokes the old token and creates a new one.
     @Test
     void rotateRefreshToken_shouldRevokeOldAndCreateNew() {
         RefreshToken existing = validToken();
@@ -111,6 +118,7 @@ class RefreshTokenServiceTest {
         verify(refreshTokenRepository, times(2)).save(any(RefreshToken.class));
     }
 
+    // Verifies that revoking a token marks it as revoked in the database.
     @Test
     void revoke_shouldMarkTokenRevoked() {
         RefreshToken token = validToken();
@@ -124,6 +132,7 @@ class RefreshTokenServiceTest {
         verify(refreshTokenRepository).save(token);
     }
 
+    // Verifies that revokeAllForUser delegates to the repository.
     @Test
     void revokeAllForUser_shouldCallRepository() {
         refreshTokenService.revokeAllForUser("11111111-1111-1111-1111-111111111111");
@@ -131,6 +140,7 @@ class RefreshTokenServiceTest {
         verify(refreshTokenRepository).revokeAllByUserId("11111111-1111-1111-1111-111111111111");
     }
 
+    // Creates a non-expired, non-revoked refresh token for testUser.
     private RefreshToken validToken() {
         RefreshToken token = new RefreshToken();
         token.setId(1L);

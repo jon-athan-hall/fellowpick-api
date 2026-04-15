@@ -8,6 +8,7 @@ import lombok.Setter;
 
 import java.time.Instant;
 
+// JPA entity for one-time tokens sent to users to confirm their email address.
 @Entity
 @Table(name = "email_verification_tokens")
 @Getter

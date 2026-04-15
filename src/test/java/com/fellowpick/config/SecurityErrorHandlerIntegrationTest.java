@@ -13,6 +13,7 @@ import static org.springframework.security.test.web.servlet.request.SecurityMock
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
+// Integration tests verifying that 401 and 403 responses return structured JSON error bodies.
 @SpringBootTest
 @AutoConfigureMockMvc
 class SecurityErrorHandlerIntegrationTest {
@@ -22,6 +23,7 @@ class SecurityErrorHandlerIntegrationTest {
 
     // ── 401: missing/invalid credentials ───────────────────────────────
 
+    // Verifies that a request with no token returns 401 with a JSON error body.
     @Test
     void noToken_shouldReturn401WithJsonErrorBody() throws Exception {
         mockMvc.perform(get("/api/users/1"))
@@ -34,6 +36,7 @@ class SecurityErrorHandlerIntegrationTest {
                 .andExpect(jsonPath("$.timestamp").exists());
     }
 
+    // Verifies that a request with a malformed bearer token returns 401.
     @Test
     void invalidBearerToken_shouldReturn401() throws Exception {
         mockMvc.perform(get("/api/users/1").header("Authorization", "Bearer not-a-real-jwt"))
@@ -44,6 +47,7 @@ class SecurityErrorHandlerIntegrationTest {
 
     // ── 403: authenticated but lacking authority ───────────────────────
 
+    // Verifies that a user without the required role gets 403 with a JSON error body.
     @Test
     void authenticatedWithoutRequiredRole_shouldReturn403WithJsonErrorBody() throws Exception {
         // /api/users (list) requires ROLE_ADMIN; this user has only ROLE_USER.

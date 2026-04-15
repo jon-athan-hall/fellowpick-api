@@ -13,6 +13,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
+// Integration tests for the rate limiting filter on auth endpoints.
 @SpringBootTest
 @AutoConfigureMockMvc
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
@@ -24,6 +25,7 @@ class RateLimitingFilterIntegrationTest {
     @Autowired
     private ObjectMapper objectMapper;
 
+    // Verifies that the 6th login request within one minute returns 429 Too Many Requests.
     @Test
     void login_exceedingFivePerMinute_shouldReturn429() throws Exception {
         var body = objectMapper.writeValueAsString(new LoginRequest("nobody@example.com", "password123"));
@@ -47,6 +49,7 @@ class RateLimitingFilterIntegrationTest {
                 .andExpect(jsonPath("$.error").value("Too Many Requests"));
     }
 
+    // Verifies that endpoints not in the rate-limit map are unaffected by login throttling.
     @Test
     void unprotectedEndpoint_shouldNotRateLimit() throws Exception {
         // /actuator/health is not in the limited paths map.

@@ -17,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.Instant;
 import java.util.UUID;
 
+// Manages email verification token creation, email dispatch, and token confirmation.
 @Service
 public class EmailVerificationService {
 
@@ -40,6 +41,7 @@ public class EmailVerificationService {
         this.verificationProperties = verificationProperties;
     }
 
+    // Creates a verification token and emails (or logs) a verification link to the user.
     public void sendVerificationEmail(User user) {
         String tokenValue = UUID.randomUUID().toString();
 
@@ -72,6 +74,7 @@ public class EmailVerificationService {
         mailSender.send(message);
     }
 
+    // Validates the token and marks the user's email as verified.
     @Transactional
     public void verify(String tokenValue) {
         EmailVerificationToken token = tokenRepository.findByToken(tokenValue)

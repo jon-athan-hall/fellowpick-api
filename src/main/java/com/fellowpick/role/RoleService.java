@@ -11,6 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
+// Business logic for creating, updating, listing, and deleting roles.
 @Service
 public class RoleService {
 
@@ -26,16 +27,19 @@ public class RoleService {
         this.roleMapper = roleMapper;
     }
 
+    // Returns all roles in the system.
     public List<RoleResponse> getAllRoles() {
         return roleMapper.toRoleResponseList(roleRepository.findAll());
     }
 
+    // Looks up a role by ID, throwing if not found.
     public RoleResponse getRoleById(String id) {
         Role role = roleRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Role not found with id: " + id));
         return roleMapper.toRoleResponse(role);
     }
 
+    // Creates a new role after verifying the name is unique.
     @Transactional
     public RoleResponse createRole(RoleRequest request) {
         if (roleRepository.existsByName(request.name())) {
@@ -45,6 +49,7 @@ public class RoleService {
         return roleMapper.toRoleResponse(roleRepository.save(role));
     }
 
+    // Renames a role, checking for name conflicts.
     @Transactional
     public RoleResponse updateRole(String id, RoleRequest request) {
         Role role = roleRepository.findById(id)
@@ -58,6 +63,7 @@ public class RoleService {
         return roleMapper.toRoleResponse(roleRepository.save(role));
     }
 
+    // Deletes a role, blocking if any users still hold it.
     @Transactional
     public void deleteRole(String id) {
         Role role = roleRepository.findById(id)

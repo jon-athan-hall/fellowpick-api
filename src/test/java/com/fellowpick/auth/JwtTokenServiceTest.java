@@ -24,6 +24,7 @@ import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+// Unit tests for JwtTokenService covering JWT claim generation and expiration.
 class JwtTokenServiceTest {
 
     private JwtTokenService jwtTokenService;
@@ -46,6 +47,7 @@ class JwtTokenServiceTest {
         jwtTokenService = new JwtTokenService(encoder, properties);
     }
 
+    // Verifies that a generated JWT contains subject, email, name, issuer, and roles claims.
     @Test
     void generateAccessToken_shouldContainExpectedClaims() {
         User user = createTestUser();
@@ -64,6 +66,7 @@ class JwtTokenServiceTest {
         assertTrue(roles.contains("ROLE_USER"));
     }
 
+    // Verifies that the JWT expiration is set after the issued-at time.
     @Test
     void generateAccessToken_shouldHaveCorrectExpiration() {
         User user = createTestUser();
@@ -76,11 +79,13 @@ class JwtTokenServiceTest {
         assertTrue(decoded.getExpiresAt().isAfter(decoded.getIssuedAt()));
     }
 
+    // Verifies that getExpirationMs returns the value from JwtProperties.
     @Test
     void getExpirationMs_shouldReturnConfiguredValue() {
         assertEquals(900000, jwtTokenService.getExpirationMs());
     }
 
+    // Creates a test user with one ROLE_USER role.
     private User createTestUser() {
         User user = new User();
         user.setId("11111111-1111-1111-1111-111111111111");

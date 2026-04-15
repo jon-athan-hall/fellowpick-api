@@ -17,6 +17,7 @@ public record RefreshTokenProperties(
         long cookieMaxAgeSeconds
 ) {
 
+    // Returns true when refresh tokens should be delivered as HTTP-only cookies.
     public boolean isCookieDelivery() {
         return "cookie".equalsIgnoreCase(delivery);
     }

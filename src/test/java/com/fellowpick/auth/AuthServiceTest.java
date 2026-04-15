@@ -28,6 +28,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
+// Unit tests for AuthService covering register, login, refresh, and logout logic.
 @ExtendWith(MockitoExtension.class)
 class AuthServiceTest {
 
@@ -65,6 +66,7 @@ class AuthServiceTest {
 
     // ── register ───────────────────────────────────────────────────────
 
+    // Verifies that registering a new user saves the user, returns tokens, and sends a verification email.
     @Test
     void register_newUser_shouldReturnTokensAndSendVerification() {
         var request = new RegisterRequest("Test", "new@example.com", "password123");
@@ -99,6 +101,7 @@ class AuthServiceTest {
         verify(emailVerificationService).sendVerificationEmail(any(User.class));
     }
 
+    // Verifies that registering with a duplicate email throws EmailAlreadyExistsException.
     @Test
     void register_existingEmail_shouldThrow() {
         var request = new RegisterRequest("Test", "dup@example.com", "password123");
@@ -110,6 +113,7 @@ class AuthServiceTest {
         verify(emailVerificationService, never()).sendVerificationEmail(any());
     }
 
+    // Verifies that registration throws when the default ROLE_USER is missing from the database.
     @Test
     void register_defaultRoleMissing_shouldThrow() {
         var request = new RegisterRequest("Test", "new@example.com", "password123");
@@ -121,6 +125,7 @@ class AuthServiceTest {
 
     // ── login ──────────────────────────────────────────────────────────
 
+    // Verifies that login with valid credentials authenticates and returns tokens.
     @Test
     void login_validCredentials_shouldReturnTokens() {
         var request = new LoginRequest("test@example.com", "password123");
@@ -142,6 +147,7 @@ class AuthServiceTest {
         verify(authenticationManager).authenticate(any(UsernamePasswordAuthenticationToken.class));
     }
 
+    // Verifies that login with bad credentials propagates BadCredentialsException.
     @Test
     void login_badCredentials_shouldPropagate() {
         var request = new LoginRequest("test@example.com", "wrong");
@@ -156,6 +162,7 @@ class AuthServiceTest {
 
     // ── refresh ────────────────────────────────────────────────────────
 
+    // Verifies that refresh rotates the refresh token and returns new access/refresh tokens.
     @Test
     void refresh_shouldRotateAndReturnNewTokens() {
         User user = new User();
@@ -179,18 +186,21 @@ class AuthServiceTest {
 
     // ── logout ─────────────────────────────────────────────────────────
 
+    // Verifies that logout with a valid token calls revoke on the refresh token service.
     @Test
     void logout_validToken_shouldRevoke() {
         authService.logout("some-token");
         verify(refreshTokenService).revoke("some-token");
     }
 
+    // Verifies that logout with a null token is a no-op.
     @Test
     void logout_nullToken_shouldNoop() {
         authService.logout(null);
         verify(refreshTokenService, never()).revoke(any());
     }
 
+    // Verifies that logout with a blank token is a no-op.
     @Test
     void logout_blankToken_shouldNoop() {
         authService.logout("   ");

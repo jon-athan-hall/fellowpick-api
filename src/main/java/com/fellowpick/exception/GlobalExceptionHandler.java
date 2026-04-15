@@ -92,6 +92,7 @@ public class GlobalExceptionHandler {
                 "An unexpected error occurred", request);
     }
 
+    // Constructs a standardized error response body with timestamp and request path.
     private ResponseEntity<ErrorResponse> buildResponse(HttpStatus status, String error,
                                                         String message, HttpServletRequest request) {
         ErrorResponse body = new ErrorResponse(

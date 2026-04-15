@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.UuidGenerator;
 
+// JPA entity representing an authorization role (e.g. ROLE_ADMIN, ROLE_USER).
 @Entity
 @Table(name = "roles")
 @Getter

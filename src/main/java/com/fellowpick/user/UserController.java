@@ -15,6 +15,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
+// REST endpoints for user profile, password, role management, and soft delete/restore.
 @RestController
 @RequestMapping("/api/users")
 public class UserController {
@@ -25,12 +26,14 @@ public class UserController {
         this.userService = userService;
     }
 
+    // Returns a user's profile; accessible by the user themselves or an admin.
     @GetMapping("/{id}")
     @PreAuthorize("hasAuthority('ROLE_ADMIN') or #id.toString() == authentication.name")
     public ResponseEntity<UserResponse> getUserById(@PathVariable String id) {
         return ResponseEntity.ok(userService.getUserById(id));
     }
 
+    // Returns a paginated list of all users (admin only).
     @GetMapping
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public ResponseEntity<Page<UserResponse>> getAllUsers(
@@ -38,6 +41,7 @@ public class UserController {
         return ResponseEntity.ok(userService.getAllUsers(pageable));
     }
 
+    // Updates a user's name and/or email.
     @PutMapping("/{id}")
     @PreAuthorize("hasAuthority('ROLE_ADMIN') or #id.toString() == authentication.name")
     public ResponseEntity<UserResponse> updateUser(@PathVariable String id,
@@ -45,6 +49,7 @@ public class UserController {
         return ResponseEntity.ok(userService.updateUser(id, request));
     }
 
+    // Changes a user's password; self-service requires current password verification.
     @PutMapping("/{id}/password")
     @PreAuthorize("hasAuthority('ROLE_ADMIN') or #id.toString() == authentication.name")
     public ResponseEntity<MessageResponse> changePassword(@PathVariable String id,
@@ -57,6 +62,7 @@ public class UserController {
         return ResponseEntity.ok(new MessageResponse("Password updated successfully"));
     }
 
+    // Assigns a role to a user (admin only).
     @PutMapping("/{id}/roles")
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public ResponseEntity<UserResponse> addRole(@PathVariable String id,
@@ -64,6 +70,7 @@ public class UserController {
         return ResponseEntity.ok(userService.addRole(id, request.roleId()));
     }
 
+    // Soft-deletes a user and revokes their refresh tokens.
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAuthority('ROLE_ADMIN') or #id.toString() == authentication.name")
     public ResponseEntity<Void> deleteUser(@PathVariable String id) {
@@ -71,12 +78,14 @@ public class UserController {
         return ResponseEntity.noContent().build();
     }
 
+    // Restores a previously soft-deleted user (admin only).
     @PostMapping("/{id}/restore")
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public ResponseEntity<UserResponse> restoreUser(@PathVariable String id) {
         return ResponseEntity.ok(userService.restoreUser(id));
     }
 
+    // Removes a role from a user (admin only).
     @DeleteMapping("/{id}/roles/{roleId}")
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public ResponseEntity<UserResponse> removeRole(@PathVariable String id,

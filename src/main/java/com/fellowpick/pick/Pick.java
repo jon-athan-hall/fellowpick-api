@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.UuidGenerator;
 
+// Represents a user's CUT or ADD vote for a specific card in a precon deck.
 @Entity
 @Table(
         name = "picks",

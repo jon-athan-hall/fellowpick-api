@@ -12,6 +12,7 @@ import org.hibernate.annotations.UuidGenerator;
 import java.util.HashSet;
 import java.util.Set;
 
+// JPA entity representing an application user with email/password auth and role assignments.
 @Entity
 @Table(name = "users")
 @SoftDelete // Hibernate manages a "deleted" boolean column and filters all queries to exclude deleted rows.

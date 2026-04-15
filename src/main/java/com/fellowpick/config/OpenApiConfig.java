@@ -8,11 +8,13 @@ import io.swagger.v3.oas.models.security.SecurityScheme;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+// Configures the Swagger/OpenAPI spec with JWT bearer auth support.
 @Configuration
 public class OpenApiConfig {
 
     private static final String SECURITY_SCHEME_NAME = "bearerAuth";
 
+    // Builds the OpenAPI definition with title, version, and a bearer token security scheme.
     @Bean
     public OpenAPI fellowpickOpenAPI() {
         return new OpenAPI()

@@ -23,6 +23,7 @@ public class JwtTokenService {
         this.jwtProperties = jwtProperties;
     }
 
+    // Builds and signs a JWT containing the user's ID, email, name, and roles.
     public String generateAccessToken(User user) {
         // Calculate some timestamps.
         Instant now = Instant.now();
@@ -47,6 +48,7 @@ public class JwtTokenService {
         return jwtEncoder.encode(JwtEncoderParameters.from(claims)).getTokenValue();
     }
 
+    // Returns the configured access token lifetime in milliseconds.
     public long getExpirationMs() {
         return jwtProperties.expirationMs();
     }

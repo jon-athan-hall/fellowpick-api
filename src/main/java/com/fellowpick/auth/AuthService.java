@@ -78,6 +78,7 @@ public class AuthService {
         return new AuthResponse(accessToken, refreshToken.getToken(), jwtTokenService.getExpirationMs());
     }
 
+    // Authenticates the user and returns new access + refresh tokens.
     public AuthResponse login(LoginRequest request) {
         // Behind the scenes process for checking authentication.
         authenticationManager.authenticate(
@@ -95,6 +96,7 @@ public class AuthService {
         return new AuthResponse(accessToken, refreshToken.getToken(), jwtTokenService.getExpirationMs());
     }
 
+    // Rotates the refresh token and issues a fresh access token.
     @Transactional
     public AuthResponse refresh(String refreshTokenValue) {
         // Rotate the refresh token and get the user.
@@ -107,6 +109,7 @@ public class AuthService {
         return new AuthResponse(accessToken, newRefreshToken.getToken(), jwtTokenService.getExpirationMs());
     }
 
+    // Revokes the given refresh token so it can no longer be used.
     public void logout(String refreshTokenValue) {
         // Revoke the token once past some null and blank checks.
         if (refreshTokenValue != null && !refreshTokenValue.isBlank()) {

@@ -11,6 +11,7 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
+// Seeds an initial admin user on startup if one doesn't already exist.
 @Component
 public class AdminSeeder implements CommandLineRunner {
 
@@ -34,6 +35,7 @@ public class AdminSeeder implements CommandLineRunner {
         this.passwordEncoder = passwordEncoder;
     }
 
+    // Creates the admin account with ROLE_ADMIN + ROLE_USER if credentials are provided.
     @Override
     public void run(String... args) {
         // Skip seeding if no password is configured.

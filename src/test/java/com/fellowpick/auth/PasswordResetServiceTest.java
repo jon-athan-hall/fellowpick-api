@@ -25,6 +25,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
+// Unit tests for PasswordResetService covering reset request, token validation, and password update.
 @ExtendWith(MockitoExtension.class)
 class PasswordResetServiceTest {
 
@@ -57,6 +58,7 @@ class PasswordResetServiceTest {
         testUser.setPassword("old-encoded");
     }
 
+    // Verifies that when mail host is blank, the reset token is saved but no email is sent.
     @Test
     void requestReset_userExists_mailHostBlank_shouldSaveTokenAndSkipSend() {
         ReflectionTestUtils.setField(passwordResetService, "mailHost", "");
@@ -75,6 +77,7 @@ class PasswordResetServiceTest {
         verifyNoInteractions(mailSender);
     }
 
+    // Verifies that when mail host is configured, a password reset email is sent.
     @Test
     void requestReset_userExists_mailHostConfigured_shouldSendMail() {
         ReflectionTestUtils.setField(passwordResetService, "mailHost", "smtp.example.com");
@@ -87,11 +90,14 @@ class PasswordResetServiceTest {
         verify(mailSender).send(captor.capture());
 
         SimpleMailMessage sent = captor.getValue();
+        assertNotNull(sent.getTo());
         assertEquals("test@example.com", sent.getTo()[0]);
         assertEquals("Reset your password", sent.getSubject());
+        assertNotNull(sent.getText());
         assertTrue(sent.getText().contains("http://localhost:5173/reset-password?token="));
     }
 
+    // Verifies that requesting a reset for a nonexistent user throws EntityNotFoundException.
     @Test
     void requestReset_userNotFound_shouldThrow() {
         when(userRepository.findByEmail("missing@example.com")).thenReturn(Optional.empty());
@@ -101,6 +107,7 @@ class PasswordResetServiceTest {
         verify(tokenRepository, never()).save(any());
     }
 
+    // Verifies that a valid reset token updates the user's password.
     @Test
     void resetPassword_validToken_shouldUpdatePassword() {
         PasswordResetToken token = validToken();
@@ -115,6 +122,7 @@ class PasswordResetServiceTest {
         verify(userRepository).save(testUser);
     }
 
+    // Verifies that a nonexistent reset token throws TokenRefreshException.
     @Test
     void resetPassword_invalidToken_shouldThrow() {
         when(tokenRepository.findByToken("nonexistent")).thenReturn(Optional.empty());
@@ -124,6 +132,7 @@ class PasswordResetServiceTest {
         verify(userRepository, never()).save(any());
     }
 
+    // Verifies that an already-used reset token throws TokenRefreshException.
     @Test
     void resetPassword_alreadyUsed_shouldThrow() {
         PasswordResetToken token = validToken();
@@ -135,6 +144,7 @@ class PasswordResetServiceTest {
         verify(userRepository, never()).save(any());
     }
 
+    // Verifies that an expired reset token throws TokenRefreshException.
     @Test
     void resetPassword_expiredToken_shouldThrow() {
         PasswordResetToken token = validToken();
@@ -146,6 +156,7 @@ class PasswordResetServiceTest {
         verify(userRepository, never()).save(any());
     }
 
+    // Creates a non-expired, unused password reset token for testUser.
     private PasswordResetToken validToken() {
         PasswordResetToken token = new PasswordResetToken();
         token.setId(1L);

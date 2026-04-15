@@ -20,6 +20,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
+// Unit tests for RoleService covering CRUD operations and conflict checks.
 @ExtendWith(MockitoExtension.class)
 class RoleServiceTest {
 
@@ -49,6 +50,7 @@ class RoleServiceTest {
         testRoleResponse = new RoleResponse(ROLE_ID, "ROLE_USER");
     }
 
+    // Verifies that getAllRoles returns all roles mapped to responses.
     @Test
     void getAllRoles_shouldReturnList() {
         when(roleRepository.findAll()).thenReturn(List.of(testRole));
@@ -60,6 +62,7 @@ class RoleServiceTest {
         assertEquals(testRoleResponse, result.getFirst());
     }
 
+    // Verifies that getRoleById returns the role when it exists.
     @Test
     void getRoleById_whenExists_shouldReturn() {
         when(roleRepository.findById(ROLE_ID)).thenReturn(Optional.of(testRole));
@@ -68,6 +71,7 @@ class RoleServiceTest {
         assertEquals(testRoleResponse, roleService.getRoleById(ROLE_ID));
     }
 
+    // Verifies that getRoleById throws EntityNotFoundException when the role is missing.
     @Test
     void getRoleById_whenNotFound_shouldThrow() {
         when(roleRepository.findById(MISSING_ROLE_ID)).thenReturn(Optional.empty());
@@ -75,6 +79,7 @@ class RoleServiceTest {
         assertThrows(EntityNotFoundException.class, () -> roleService.getRoleById(MISSING_ROLE_ID));
     }
 
+    // Verifies that createRole saves a new role and returns the mapped response.
     @Test
     void createRole_shouldSaveAndReturn() {
         RoleRequest request = new RoleRequest("ROLE_NEW");
@@ -88,6 +93,7 @@ class RoleServiceTest {
         verify(roleRepository).save(any(Role.class));
     }
 
+    // Verifies that creating a role with an existing name throws RoleNameAlreadyExistsException.
     @Test
     void createRole_duplicateName_shouldThrow() {
         when(roleRepository.existsByName("ROLE_USER")).thenReturn(true);
@@ -97,6 +103,7 @@ class RoleServiceTest {
         verify(roleRepository, never()).save(any());
     }
 
+    // Verifies that updateRole changes the role's name.
     @Test
     void updateRole_shouldUpdateName() {
         when(roleRepository.findById(ROLE_ID)).thenReturn(Optional.of(testRole));
@@ -109,6 +116,7 @@ class RoleServiceTest {
         assertEquals("ROLE_RENAMED", testRole.getName());
     }
 
+    // Verifies that updating a role to the same name skips the duplicate name check.
     @Test
     void updateRole_sameName_shouldSkipDuplicateCheck() {
         when(roleRepository.findById(ROLE_ID)).thenReturn(Optional.of(testRole));
@@ -120,6 +128,7 @@ class RoleServiceTest {
         verify(roleRepository, never()).existsByName(any());
     }
 
+    // Verifies that renaming a role to an already-taken name throws RoleNameAlreadyExistsException.
     @Test
     void updateRole_collidingName_shouldThrow() {
         when(roleRepository.findById(ROLE_ID)).thenReturn(Optional.of(testRole));
@@ -129,6 +138,7 @@ class RoleServiceTest {
                 () -> roleService.updateRole(ROLE_ID, new RoleRequest("ROLE_ADMIN")));
     }
 
+    // Verifies that updating a nonexistent role throws EntityNotFoundException.
     @Test
     void updateRole_notFound_shouldThrow() {
         when(roleRepository.findById(MISSING_ROLE_ID)).thenReturn(Optional.empty());
@@ -137,6 +147,7 @@ class RoleServiceTest {
                 () -> roleService.updateRole(MISSING_ROLE_ID, new RoleRequest("ROLE_X")));
     }
 
+    // Verifies that an unused role can be deleted.
     @Test
     void deleteRole_whenUnused_shouldDelete() {
         when(roleRepository.findById(ROLE_ID)).thenReturn(Optional.of(testRole));
@@ -147,6 +158,7 @@ class RoleServiceTest {
         verify(roleRepository).delete(testRole);
     }
 
+    // Verifies that deleting a role assigned to users throws RoleInUseException.
     @Test
     void deleteRole_whenInUse_shouldThrow() {
         when(roleRepository.findById(ROLE_ID)).thenReturn(Optional.of(testRole));
@@ -156,6 +168,7 @@ class RoleServiceTest {
         verify(roleRepository, never()).delete(any(Role.class));
     }
 
+    // Verifies that deleting a nonexistent role throws EntityNotFoundException.
     @Test
     void deleteRole_notFound_shouldThrow() {
         when(roleRepository.findById(MISSING_ROLE_ID)).thenReturn(Optional.empty());

@@ -16,6 +16,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+// Business logic for user profile updates, password changes, role assignment, and soft delete/restore.
 @Service
 public class UserService {
 
@@ -40,12 +41,14 @@ public class UserService {
         this.refreshTokenRepository = refreshTokenRepository;
     }
 
+    // Retrieves a user by ID, throwing if not found.
     public UserResponse getUserById(String userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new EntityNotFoundException("User not found with id: " + userId));
         return userMapper.toUserResponse(user);
     }
 
+    // Updates a user's name and/or email, re-verifying if the email changes.
     @Transactional
     public UserResponse updateUser(String userId, UpdateUserRequest request) {
         User user = userRepository.findById(userId)
@@ -74,10 +77,12 @@ public class UserService {
         return userMapper.toUserResponse(user);
     }
 
+    // Returns a paginated list of all non-deleted users.
     public Page<UserResponse> getAllUsers(Pageable pageable) {
         return userRepository.findAll(pageable).map(userMapper::toUserResponse);
     }
 
+    // Changes a user's password, optionally verifying the current password for self-service changes.
     @Transactional
     public void changePassword(String userId, ChangePasswordRequest request, boolean requireCurrentPassword) {
         User user = userRepository.findById(userId)
@@ -95,6 +100,7 @@ public class UserService {
         userRepository.save(user);
     }
 
+    // Assigns a role to a user.
     @Transactional
     public UserResponse addRole(String userId, String roleId) {
         User user = userRepository.findById(userId)
@@ -108,6 +114,7 @@ public class UserService {
         return userMapper.toUserResponse(userRepository.save(user));
     }
 
+    // Soft-deletes a user and revokes all their refresh tokens.
     @Transactional
     public void deleteUser(String userId) {
         User user = userRepository.findById(userId)
@@ -120,6 +127,7 @@ public class UserService {
         userRepository.delete(user);
     }
 
+    // Restores a soft-deleted user by flipping the deleted flag back to false.
     @Transactional
     public UserResponse restoreUser(String userId) {
         int rowsAffected = userRepository.restoreById(userId);
@@ -130,6 +138,7 @@ public class UserService {
                 .orElseThrow(() -> new EntityNotFoundException("User not found with id: " + userId)));
     }
 
+    // Removes a role from a user.
     @Transactional
     public UserResponse removeRole(String userId, String roleId) {
         User user = userRepository.findById(userId)

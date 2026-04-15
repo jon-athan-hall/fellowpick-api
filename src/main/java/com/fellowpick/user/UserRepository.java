@@ -7,8 +7,10 @@ import org.springframework.data.repository.query.Param;
 
 import java.util.Optional;
 
+// Data access layer for User entities with soft-delete support.
 public interface UserRepository extends JpaRepository<User, String> {
 
+    // Finds a user by their email address.
     Optional<User> findByEmail(String email);
 
     // Lightweight check with no entity hydration and no role joins.

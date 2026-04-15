@@ -3,6 +3,7 @@ package com.fellowpick.user.dto;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
+// Inbound request DTO for changing a user's password.
 public record ChangePasswordRequest(
         // Optional: only required when a user changes their own password.
         String currentPassword,

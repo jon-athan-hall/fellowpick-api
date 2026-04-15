@@ -8,6 +8,7 @@ import lombok.Setter;
 
 import java.time.Instant;
 
+// JPA entity for refresh tokens that allow users to obtain new access tokens.
 @Entity
 @Table(name = "refresh_tokens")
 @Getter

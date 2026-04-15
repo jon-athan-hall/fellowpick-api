@@ -18,6 +18,7 @@ import java.util.Optional;
 @EnableJpaAuditing(auditorAwareRef = "auditorAware")
 public class JpaAuditingConfig {
 
+    // Extracts the current user's ID from the JWT for @CreatedBy/@LastModifiedBy audit fields.
     @Bean
     public AuditorAware<String> auditorAware() {
         return () -> {

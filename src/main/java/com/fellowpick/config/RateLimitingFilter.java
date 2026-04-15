@@ -55,6 +55,7 @@ public class RateLimitingFilter extends OncePerRequestFilter {
         limitsByPath.put("POST:/api/auth/reset-password", threePerHour);
     }
 
+    // Checks the rate limit bucket for the request's endpoint+IP and either passes through or rejects with 429.
     @Override
     protected void doFilterInternal(@Nonnull HttpServletRequest request,
                                     @Nonnull HttpServletResponse response,
@@ -82,12 +83,14 @@ public class RateLimitingFilter extends OncePerRequestFilter {
         writeRateLimitResponse(request, response, retryAfterSeconds);
     }
 
+    // Creates a token bucket that refills to full capacity once per period.
     private Bucket bucket(long capacity, Duration period) {
         return Bucket.builder()
                 .addLimit(Bandwidth.builder().capacity(capacity).refillIntervally(capacity, period).build())
                 .build();
     }
 
+    // Resolves the client IP from X-Forwarded-For or falls back to the remote address.
     private String clientIp(HttpServletRequest request) {
         // X-Forwarded-For is set by reverse proxies (nginx, Caddy, etc.). Falls back to the direct remote address.
         String forwarded = request.getHeader("X-Forwarded-For");
@@ -97,6 +100,7 @@ public class RateLimitingFilter extends OncePerRequestFilter {
         return request.getRemoteAddr();
     }
 
+    // Writes a 429 Too Many Requests JSON response with a Retry-After header.
     private void writeRateLimitResponse(HttpServletRequest request,
                                         HttpServletResponse response,
                                         long retryAfterSeconds) throws IOException {

@@ -32,6 +32,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
+// Unit tests for UserService covering CRUD, password changes, role management, and soft delete/restore.
 @ExtendWith(MockitoExtension.class)
 class UserServiceTest {
 
@@ -78,6 +79,7 @@ class UserServiceTest {
                 true, Set.of("ROLE_USER"), null);
     }
 
+    // Verifies that getUserById returns the mapped response when the user exists.
     @Test
     void getUserById_whenExists_shouldReturnUser() {
         when(userRepository.findById(USER_ID)).thenReturn(Optional.of(testUser));
@@ -88,6 +90,7 @@ class UserServiceTest {
         assertEquals(testUserResponse, result);
     }
 
+    // Verifies that getUserById throws EntityNotFoundException when the user is missing.
     @Test
     void getUserById_whenNotFound_shouldThrow() {
         when(userRepository.findById(OTHER_USER_ID)).thenReturn(Optional.empty());
@@ -95,6 +98,7 @@ class UserServiceTest {
         assertThrows(EntityNotFoundException.class, () -> userService.getUserById(OTHER_USER_ID));
     }
 
+    // Verifies that updating only the name does not trigger email re-verification.
     @Test
     void updateUser_nameOnly_shouldUpdate() {
         when(userRepository.findById(USER_ID)).thenReturn(Optional.of(testUser));
@@ -107,6 +111,7 @@ class UserServiceTest {
         verify(emailVerificationService, never()).sendVerificationEmail(any());
     }
 
+    // Verifies that changing email resets verified status and sends a new verification email.
     @Test
     void updateUser_changingEmail_shouldResetVerifiedAndSendEmail() {
         when(userRepository.findById(USER_ID)).thenReturn(Optional.of(testUser));
@@ -121,6 +126,7 @@ class UserServiceTest {
         verify(emailVerificationService).sendVerificationEmail(testUser);
     }
 
+    // Verifies that updating to an already-taken email throws EmailAlreadyExistsException.
     @Test
     void updateUser_emailAlreadyTaken_shouldThrow() {
         when(userRepository.findById(USER_ID)).thenReturn(Optional.of(testUser));
@@ -133,6 +139,7 @@ class UserServiceTest {
         verify(emailVerificationService, never()).sendVerificationEmail(any());
     }
 
+    // Verifies that updating to the same email in different case does not reset verification.
     @Test
     void updateUser_sameEmailDifferentCase_shouldNotResetVerified() {
         when(userRepository.findById(USER_ID)).thenReturn(Optional.of(testUser));
@@ -145,6 +152,7 @@ class UserServiceTest {
         verify(emailVerificationService, never()).sendVerificationEmail(any());
     }
 
+    // Verifies that getAllUsers returns a paginated list of user responses.
     @Test
     void getAllUsers_shouldReturnPageOfResponses() {
         Pageable pageable = PageRequest.of(0, 10);
@@ -158,6 +166,7 @@ class UserServiceTest {
         assertEquals(testUserResponse, result.getContent().getFirst());
     }
 
+    // Verifies that changing password with a correct current password updates the stored hash.
     @Test
     void changePassword_selfWithCorrectCurrent_shouldUpdate() {
         when(userRepository.findById(USER_ID)).thenReturn(Optional.of(testUser));
@@ -170,6 +179,7 @@ class UserServiceTest {
         verify(userRepository).save(testUser);
     }
 
+    // Verifies that changing password with a wrong current password throws BadCredentialsException.
     @Test
     void changePassword_selfWithWrongCurrent_shouldThrow() {
         when(userRepository.findById(USER_ID)).thenReturn(Optional.of(testUser));
@@ -181,6 +191,7 @@ class UserServiceTest {
         verify(userRepository, never()).save(any());
     }
 
+    // Verifies that changing password with a null current password throws BadCredentialsException.
     @Test
     void changePassword_selfWithNullCurrent_shouldThrow() {
         when(userRepository.findById(USER_ID)).thenReturn(Optional.of(testUser));
@@ -189,6 +200,7 @@ class UserServiceTest {
                 () -> userService.changePassword(USER_ID, new ChangePasswordRequest(null, "newPass123"), true));
     }
 
+    // Verifies that an admin can change a user's password without providing the current one.
     @Test
     void changePassword_adminBypassCurrent_shouldUpdate() {
         when(userRepository.findById(USER_ID)).thenReturn(Optional.of(testUser));
@@ -201,6 +213,7 @@ class UserServiceTest {
         verify(userRepository).save(testUser);
     }
 
+    // Verifies that addRole adds the specified role to the user's role set.
     @Test
     void addRole_shouldAddRoleToUser() {
         Role admin = new Role("ROLE_ADMIN");
@@ -215,6 +228,7 @@ class UserServiceTest {
         assertTrue(testUser.getRoles().contains(admin));
     }
 
+    // Verifies that addRole throws EntityNotFoundException when the user is missing.
     @Test
     void addRole_userNotFound_shouldThrow() {
         when(userRepository.findById(USER_ID)).thenReturn(Optional.empty());
@@ -222,6 +236,7 @@ class UserServiceTest {
         assertThrows(EntityNotFoundException.class, () -> userService.addRole(USER_ID, ADMIN_ROLE_ID));
     }
 
+    // Verifies that addRole throws EntityNotFoundException when the role is missing.
     @Test
     void addRole_roleNotFound_shouldThrow() {
         when(userRepository.findById(USER_ID)).thenReturn(Optional.of(testUser));
@@ -230,6 +245,7 @@ class UserServiceTest {
         assertThrows(EntityNotFoundException.class, () -> userService.addRole(USER_ID, ADMIN_ROLE_ID));
     }
 
+    // Verifies that removeRole removes the specified role from the user's role set.
     @Test
     void removeRole_shouldRemoveRoleFromUser() {
         Role userRole = testUser.getRoles().iterator().next();
@@ -244,6 +260,7 @@ class UserServiceTest {
         assertFalse(testUser.getRoles().contains(userRole));
     }
 
+    // Verifies that deleting a user revokes all their refresh tokens and soft-deletes the user.
     @Test
     void deleteUser_shouldRevokeTokensAndDelete() {
         when(userRepository.findById(USER_ID)).thenReturn(Optional.of(testUser));
@@ -254,6 +271,7 @@ class UserServiceTest {
         verify(userRepository).delete(testUser);
     }
 
+    // Verifies that deleting a nonexistent user throws EntityNotFoundException.
     @Test
     void deleteUser_notFound_shouldThrow() {
         when(userRepository.findById(OTHER_USER_ID)).thenReturn(Optional.empty());
@@ -262,6 +280,7 @@ class UserServiceTest {
         verify(refreshTokenRepository, never()).revokeAllByUserId(any());
     }
 
+    // Verifies that restoring a soft-deleted user returns the restored user response.
     @Test
     void restoreUser_whenRowsAffected_shouldReturnUser() {
         when(userRepository.restoreById(USER_ID)).thenReturn(1);
@@ -273,6 +292,7 @@ class UserServiceTest {
         assertEquals(testUserResponse, result);
     }
 
+    // Verifies that restoring a user with no matching rows throws EntityNotFoundException.
     @Test
     void restoreUser_whenNoRowsAffected_shouldThrow() {
         when(userRepository.restoreById(USER_ID)).thenReturn(0);

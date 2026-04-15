@@ -46,6 +46,7 @@ public class RefreshTokenService {
         return createRefreshToken(existing.getUser());
     }
 
+    // Validates that a refresh token exists, is not revoked, and has not expired.
     public RefreshToken verify(String tokenValue) {
         // Check if the token exists.
         RefreshToken refreshToken = refreshTokenRepository.findByToken(tokenValue)
@@ -79,6 +80,7 @@ public class RefreshTokenService {
         refreshTokenRepository.revokeAllByUserId(userId);
     }
 
+    // Scheduled daily at 3 AM to purge revoked and expired refresh tokens.
     @Scheduled(cron = "0 0 3 * * *")
     @Transactional
     public void cleanupExpiredTokens() {

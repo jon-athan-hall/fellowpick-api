@@ -19,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.Instant;
 import java.util.UUID;
 
+// Handles password reset token creation, email dispatch, and password update.
 @Service
 public class PasswordResetService {
 
@@ -45,6 +46,7 @@ public class PasswordResetService {
         this.properties = properties;
     }
 
+    // Creates a reset token and emails (or logs) a reset link to the user.
     @Transactional
     public void requestReset(String email) {
         User user = userRepository.findByEmail(email)
@@ -80,6 +82,7 @@ public class PasswordResetService {
         mailSender.send(message);
     }
 
+    // Validates the reset token and updates the user's password.
     @Transactional
     public void resetPassword(String tokenValue, String newPassword) {
         PasswordResetToken token = tokenRepository.findByToken(tokenValue)
