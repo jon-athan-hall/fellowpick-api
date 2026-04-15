@@ -12,7 +12,7 @@ There are two options.
 
 Start the MySQL container in Docker Desktop.
 
-Then run the application from IntelliJ via the `TrailheadApplication` run configuration. The app uses the `dev` profile by default and connects to MySQL at `localhost:3306`.
+Then run the application from IntelliJ via the `FellowpickApplication` run configuration. The app uses the `dev` profile by default and connects to MySQL at `localhost:3306`.
 
 Be sure to check that run config for environment variable values.
 
