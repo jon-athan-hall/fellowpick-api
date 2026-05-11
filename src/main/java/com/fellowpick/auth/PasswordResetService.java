@@ -34,6 +34,9 @@ public class PasswordResetService {
     @Value("${spring.mail.host:}")
     private String mailHost;
 
+    @Value("${app.mail.from:}")
+    private String mailFrom;
+
     public PasswordResetService(PasswordResetTokenRepository tokenRepository,
                                 UserRepository userRepository,
                                 JavaMailSender mailSender,
@@ -73,6 +76,9 @@ public class PasswordResetService {
         }
 
         SimpleMailMessage message = new SimpleMailMessage();
+        if (!mailFrom.isBlank()) {
+            message.setFrom(mailFrom);
+        }
         message.setTo(user.getEmail());
         message.setSubject("Reset your password");
         message.setText("Click the link below to reset your password:\n\n"

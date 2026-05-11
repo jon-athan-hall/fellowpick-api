@@ -31,6 +31,9 @@ public class EmailVerificationService {
     @Value("${spring.mail.host:}")
     private String mailHost;
 
+    @Value("${app.mail.from:}")
+    private String mailFrom;
+
     public EmailVerificationService(EmailVerificationTokenRepository tokenRepository,
                                     UserRepository userRepository,
                                     JavaMailSender mailSender,
@@ -65,6 +68,9 @@ public class EmailVerificationService {
         }
 
         SimpleMailMessage message = new SimpleMailMessage();
+        if (!mailFrom.isBlank()) {
+            message.setFrom(mailFrom);
+        }
         message.setTo(user.getEmail());
         message.setSubject("Verify your email");
         message.setText("Click the link below to verify your email address:\n\n"
