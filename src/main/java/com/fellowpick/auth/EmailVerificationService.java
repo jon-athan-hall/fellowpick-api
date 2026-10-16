@@ -78,6 +78,7 @@ public class EmailVerificationService {
                 + "This link expires in 24 hours.");
 
         mailSender.send(message);
+        log.info("Verification email accepted by SMTP relay for user {}", user.getId());
     }
 
     // Validates the token and marks the user's email as verified.
