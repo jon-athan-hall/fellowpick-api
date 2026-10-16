@@ -10,7 +10,6 @@ import jakarta.persistence.EntityNotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -24,6 +23,8 @@ import java.util.UUID;
 public class PasswordResetService {
 
     private static final Logger log = LoggerFactory.getLogger(PasswordResetService.class);
+
+    static final String SUBJECT = "Reset your Fellowpick password";
 
     private final PasswordResetTokenRepository tokenRepository;
     private final UserRepository userRepository;
@@ -69,23 +70,18 @@ public class PasswordResetService {
         if (mailHost == null || mailHost.isBlank()) {
             log.info("===== PASSWORD RESET EMAIL =====");
             log.info("To: {}", user.getEmail());
-            log.info("Subject: Reset your password");
+            log.info("Subject: {}", SUBJECT);
             log.info("Link: {}", resetLink);
             log.info("================================");
             return;
         }
 
-        SimpleMailMessage message = new SimpleMailMessage();
-        if (!mailFrom.isBlank()) {
-            message.setFrom(mailFrom);
-        }
-        message.setTo(user.getEmail());
-        message.setSubject("Reset your password");
-        message.setText("Click the link below to reset your password:\n\n"
-                + resetLink + "\n\n"
-                + "This link expires in 15 minutes. If you didn't request this, ignore this email.");
-
-        mailSender.send(message);
+        mailSender.send(AuthEmail.build(mailSender, mailFrom, user.getEmail(), SUBJECT,
+                user.getName(),
+                "We received a request to reset the password for your Fellowpick account.",
+                "Reset password",
+                resetLink,
+                "This link expires in 15 minutes. If you didn't request a reset, you can ignore this email and your password won't change."));
     }
 
     // Validates the reset token and updates the user's password.

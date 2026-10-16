@@ -13,7 +13,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.mail.SimpleMailMessage;
+import jakarta.mail.Message;
+import jakarta.mail.internet.MimeMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.util.ReflectionTestUtils;
@@ -79,25 +80,26 @@ class PasswordResetServiceTest {
 
     // Verifies that when mail host is configured, a password reset email is sent.
     @Test
-    void requestReset_userExists_mailHostConfigured_shouldSendMail() {
+    void requestReset_userExists_mailHostConfigured_shouldSendMail() throws Exception {
         ReflectionTestUtils.setField(passwordResetService, "mailHost", "smtp.example.com");
         // Spring injects "" when app.mail.from is unset; a hand-built service gets null instead.
         ReflectionTestUtils.setField(passwordResetService, "mailFrom", "Fellowpick <noreply@example.com>");
+        MailTestSupport.stubCreateMimeMessage(mailSender);
         when(userRepository.findByEmail("test@example.com")).thenReturn(Optional.of(testUser));
 
         passwordResetService.requestReset("test@example.com");
 
         verify(tokenRepository).save(any(PasswordResetToken.class));
-        ArgumentCaptor<SimpleMailMessage> captor = ArgumentCaptor.forClass(SimpleMailMessage.class);
+        ArgumentCaptor<MimeMessage> captor = ArgumentCaptor.forClass(MimeMessage.class);
         verify(mailSender).send(captor.capture());
 
-        SimpleMailMessage sent = captor.getValue();
-        assertNotNull(sent.getTo());
-        assertEquals("test@example.com", sent.getTo()[0]);
-        assertEquals("Fellowpick <noreply@example.com>", sent.getFrom());
-        assertEquals("Reset your password", sent.getSubject());
-        assertNotNull(sent.getText());
-        assertTrue(sent.getText().contains("http://localhost:5173/reset-password?token="));
+        MimeMessage sent = captor.getValue();
+        assertEquals("test@example.com", sent.getRecipients(Message.RecipientType.TO)[0].toString());
+        assertEquals("Fellowpick <noreply@example.com>", sent.getFrom()[0].toString());
+        assertEquals(PasswordResetService.SUBJECT, sent.getSubject());
+        String text = MailTestSupport.allText(sent);
+        assertTrue(text.contains("http://localhost:5173/reset-password?token="));
+        assertTrue(text.contains("<a href=\"http://localhost:5173/reset-password?token="), "should include an HTML part");
     }
 
     // Verifies that requesting a reset for a nonexistent user throws EntityNotFoundException.

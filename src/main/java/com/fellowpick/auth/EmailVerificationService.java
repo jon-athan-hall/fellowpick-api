@@ -9,7 +9,6 @@ import com.fellowpick.user.UserRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,6 +21,8 @@ import java.util.UUID;
 public class EmailVerificationService {
 
     private static final Logger log = LoggerFactory.getLogger(EmailVerificationService.class);
+
+    static final String SUBJECT = "Confirm your Fellowpick account";
 
     private final EmailVerificationTokenRepository tokenRepository;
     private final UserRepository userRepository;
@@ -61,23 +62,18 @@ public class EmailVerificationService {
         if (mailHost == null || mailHost.isBlank()) {
             log.info("===== VERIFICATION EMAIL =====");
             log.info("To: {}", user.getEmail());
-            log.info("Subject: Verify your email");
+            log.info("Subject: {}", SUBJECT);
             log.info("Link: {}", verificationLink);
             log.info("==============================");
             return;
         }
 
-        SimpleMailMessage message = new SimpleMailMessage();
-        if (!mailFrom.isBlank()) {
-            message.setFrom(mailFrom);
-        }
-        message.setTo(user.getEmail());
-        message.setSubject("Verify your email");
-        message.setText("Click the link below to verify your email address:\n\n"
-                + verificationLink + "\n\n"
-                + "This link expires in 24 hours.");
-
-        mailSender.send(message);
+        mailSender.send(AuthEmail.build(mailSender, mailFrom, user.getEmail(), SUBJECT,
+                user.getName(),
+                "Thanks for signing up for Fellowpick. Confirm your email address to finish setting up your account.",
+                "Confirm email",
+                verificationLink,
+                "This link expires in 24 hours. If you didn't create a Fellowpick account, you can ignore this email."));
         log.info("Verification email accepted by SMTP relay for user {}", user.getId());
     }
 

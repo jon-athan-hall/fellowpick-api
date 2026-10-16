@@ -13,7 +13,8 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.mail.SimpleMailMessage;
+import jakarta.mail.Message;
+import jakarta.mail.internet.MimeMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.test.util.ReflectionTestUtils;
 
@@ -76,25 +77,43 @@ class EmailVerificationServiceTest {
 
     // Verifies that when mail host is configured, a verification email is sent to the user.
     @Test
-    void sendVerificationEmail_whenMailHostConfigured_shouldSendMail() {
+    void sendVerificationEmail_whenMailHostConfigured_shouldSendMail() throws Exception {
         ReflectionTestUtils.setField(emailVerificationService, "mailHost", "smtp.example.com");
         // Spring injects "" when app.mail.from is unset; a hand-built service gets null instead.
         ReflectionTestUtils.setField(emailVerificationService, "mailFrom", "Fellowpick <noreply@example.com>");
+        MailTestSupport.stubCreateMimeMessage(mailSender);
 
         emailVerificationService.sendVerificationEmail(testUser);
 
         verify(tokenRepository).save(any(EmailVerificationToken.class));
 
-        ArgumentCaptor<SimpleMailMessage> messageCaptor = ArgumentCaptor.forClass(SimpleMailMessage.class);
+        ArgumentCaptor<MimeMessage> messageCaptor = ArgumentCaptor.forClass(MimeMessage.class);
         verify(mailSender).send(messageCaptor.capture());
-        SimpleMailMessage sent = messageCaptor.getValue();
+        MimeMessage sent = messageCaptor.getValue();
 
-        assertNotNull(sent.getTo());
-        assertEquals("test@example.com", sent.getTo()[0]);
-        assertEquals("Fellowpick <noreply@example.com>", sent.getFrom());
-        assertEquals("Verify your email", sent.getSubject());
-        assertNotNull(sent.getText());
-        assertTrue(sent.getText().contains("http://localhost:5173/verify?token="));
+        assertEquals("test@example.com", sent.getRecipients(Message.RecipientType.TO)[0].toString());
+        assertEquals("Fellowpick <noreply@example.com>", sent.getFrom()[0].toString());
+        assertEquals(EmailVerificationService.SUBJECT, sent.getSubject());
+        String text = MailTestSupport.allText(sent);
+        assertTrue(text.contains("http://localhost:5173/verify?token="));
+        assertTrue(text.contains("<a href=\"http://localhost:5173/verify?token="), "should include an HTML part");
+        assertTrue(text.contains("Hi Test User,"));
+    }
+
+    // Verifies that a user-supplied name is HTML-escaped in the HTML part.
+    @Test
+    void sendVerificationEmail_shouldEscapeNameInHtml() throws Exception {
+        ReflectionTestUtils.setField(emailVerificationService, "mailHost", "smtp.example.com");
+        ReflectionTestUtils.setField(emailVerificationService, "mailFrom", "");
+        MailTestSupport.stubCreateMimeMessage(mailSender);
+        testUser.setName("<script>x</script>");
+
+        emailVerificationService.sendVerificationEmail(testUser);
+
+        ArgumentCaptor<MimeMessage> messageCaptor = ArgumentCaptor.forClass(MimeMessage.class);
+        verify(mailSender).send(messageCaptor.capture());
+        String text = MailTestSupport.allText(messageCaptor.getValue());
+        assertTrue(text.contains("&lt;script&gt;x&lt;/script&gt;"));
     }
 
     // Verifies that a valid token marks the user as verified.
