@@ -393,6 +393,14 @@ class AuthControllerIntegrationTest {
                 .andExpect(jsonPath("$.message").value("Email is already verified"));
     }
 
+    // Verifies that a signed-out request is refused with 401 rather than reaching the controller,
+    // which reads the caller from the JWT and failed with a 500 when there was none.
+    @Test
+    void resendVerification_unauthenticated_shouldReturnUnauthorized() throws Exception {
+        mockMvc.perform(post("/api/auth/resend-verification"))
+                .andExpect(status().isUnauthorized());
+    }
+
     // ── Helper Methods ──────────────────────────────────────────────────
 
     // Returns the most recently saved email verification token from the database.

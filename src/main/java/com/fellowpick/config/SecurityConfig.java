@@ -52,6 +52,10 @@ public class SecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 // Matches rules from top to bottom. Signup, login, and health checks should be public.
                 .authorizeHttpRequests(auth -> auth
+                        // The one auth endpoint that acts on the signed-in user, so it must come before the
+                        // permitAll below. Without it a signed-out call reached the controller and failed
+                        // with a 500 reading a JWT that wasn't there, instead of a 401.
+                        .requestMatchers("/api/auth/resend-verification").authenticated()
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/picks/{preconId}").permitAll()
                         .requestMatchers("/actuator/health").permitAll()

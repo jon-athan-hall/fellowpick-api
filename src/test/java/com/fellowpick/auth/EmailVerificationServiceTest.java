@@ -78,6 +78,8 @@ class EmailVerificationServiceTest {
     @Test
     void sendVerificationEmail_whenMailHostConfigured_shouldSendMail() {
         ReflectionTestUtils.setField(emailVerificationService, "mailHost", "smtp.example.com");
+        // Spring injects "" when app.mail.from is unset; a hand-built service gets null instead.
+        ReflectionTestUtils.setField(emailVerificationService, "mailFrom", "Fellowpick <noreply@example.com>");
 
         emailVerificationService.sendVerificationEmail(testUser);
 
@@ -89,6 +91,7 @@ class EmailVerificationServiceTest {
 
         assertNotNull(sent.getTo());
         assertEquals("test@example.com", sent.getTo()[0]);
+        assertEquals("Fellowpick <noreply@example.com>", sent.getFrom());
         assertEquals("Verify your email", sent.getSubject());
         assertNotNull(sent.getText());
         assertTrue(sent.getText().contains("http://localhost:5173/verify?token="));

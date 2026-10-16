@@ -81,6 +81,8 @@ class PasswordResetServiceTest {
     @Test
     void requestReset_userExists_mailHostConfigured_shouldSendMail() {
         ReflectionTestUtils.setField(passwordResetService, "mailHost", "smtp.example.com");
+        // Spring injects "" when app.mail.from is unset; a hand-built service gets null instead.
+        ReflectionTestUtils.setField(passwordResetService, "mailFrom", "Fellowpick <noreply@example.com>");
         when(userRepository.findByEmail("test@example.com")).thenReturn(Optional.of(testUser));
 
         passwordResetService.requestReset("test@example.com");
@@ -92,6 +94,7 @@ class PasswordResetServiceTest {
         SimpleMailMessage sent = captor.getValue();
         assertNotNull(sent.getTo());
         assertEquals("test@example.com", sent.getTo()[0]);
+        assertEquals("Fellowpick <noreply@example.com>", sent.getFrom());
         assertEquals("Reset your password", sent.getSubject());
         assertNotNull(sent.getText());
         assertTrue(sent.getText().contains("http://localhost:5173/reset-password?token="));
